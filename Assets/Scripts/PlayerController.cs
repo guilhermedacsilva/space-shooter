@@ -11,12 +11,26 @@ public class PlayerController : MonoBehaviour {
 
     public float speed;
     public Boundary boundary;
+    public float tilt;
+    public GameObject shot;
+    public Transform shotSpawn;
+    public float fireRate;
 
+    private float nextFire;
     private Rigidbody rb;
 
     void Start ()
     {
         rb = GetComponent<Rigidbody>();
+    }
+
+    void Update ()
+    {
+        if (Input.GetButton("Fire1") && Time.time > nextFire)
+        {
+            nextFire = Time.time + fireRate;
+            Instantiate(shot, shotSpawn.position, shotSpawn.rotation);
+        }
     }
 
     void FixedUpdate()
@@ -25,16 +39,16 @@ public class PlayerController : MonoBehaviour {
         float moveVertical = Input.GetAxis("Vertical");
 
         Vector3 movement = new Vector3(moveHorizontal, 0.0f, moveVertical);
+        
+        rb.velocity = movement * speed;
 
-        //rb.velocity = movement * speed;
-        rb.AddForce(movement * speed);
-
-        rb.transform.position = new Vector3(
-            Mathf.Clamp(rb.transform.position.x, boundary.xMin, boundary.xMax),
+        rb.MovePosition(new Vector3(
+            Mathf.Clamp(rb.position.x, boundary.xMin, boundary.xMax),
             0.0f,
-            Mathf.Clamp(rb.transform.position.z, boundary.zMin, boundary.zMax)
+            Mathf.Clamp(rb.position.z, boundary.zMin, boundary.zMax)
+            )
         );
 
-        Debug.Log(rb.transform.position);
+        rb.rotation = Quaternion.Euler(0,0, rb.velocity.x * -tilt);
     }
 }
